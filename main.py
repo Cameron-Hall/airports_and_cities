@@ -1,4 +1,13 @@
 import sqlite3
+import os
+
+def clear():
+    os.system('clear')
+
+def airport_info():
+    clear()
+    
+
 
 with sqlite3.connect('europe_airpots.db') as conn:
     cursor = conn.cursor()
