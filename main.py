@@ -31,20 +31,19 @@ def airport_list():
 
 with sqlite3.connect('europe_airports.db') as conn:
     cursor = conn.cursor()
-    user_choice = input("What would you like to find information about?\n1. Airports\n2. Cities\n> ")
+    user_choice = input("What would you like to find information about?\n1. Airports\n2. Cities (not working)\n> ")
     proper_choice = False
     if user_choice == '1':
         while proper_choice == False:
-            user_choice = input("Enter the IATA code of the airport you'd like to find information about. If you'd like a list of airports, enter OPT.\n> ")
+            user_choice = input("Enter the IATA code of the airport you'd like to find information about. If you'd like a list of airports, enter OPT (currently not working).\n> ")
             if user_choice == 'OPT':
                 proper_choice = True
                 airport_list('all')
             elif len(user_choice) != 3:
-                print('Invalid entry, please enter the IATA code of an eligible airport.')
+                print('Invalid entry, IATA codes are 3 letters long.')
             else:
                 proper_choice = True
                 airport_info(user_choice)
-                print(proper_choice)
     elif user_choice == '2':
         user_choice = input("Enter the name of the city you'd like to find information about. If you'd like a list of cities, enter options.")
     else:
