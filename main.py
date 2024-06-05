@@ -4,6 +4,8 @@ import os
 
 # LISTS
 airports = []
+info = []
+sentence = []
 
 # VARIABLES
 proper_choice = False
@@ -25,27 +27,37 @@ def airport_info(airport):
         print("This airport is not on the list.")
         proper_choice = False
     else:
-        print(f"What would you like to find out about {airport}?\n1. Official name\n2. City served\n3. Country served\n4. Number of unique destinations\n5. Number of terminals\n6. Yearly passengers\nYou may also enter multiple digits to find out multiple pieces of information\n> ")
-
+        user_choice = input(f"What would you like to find out about {airport}?\n1. City served\n2. Country served\n3. Number of unique destinations\n4. Number of terminals\n5. Yearly passengers\nYou may also enter multiple digits to find out multiple pieces of information\n> ")
+        for char in range(len(user_choice)):
+            if user_choice[char] in info:
+                pass
+            else:
+                info.append(user_choice[char])
+        cursor.execute('SELECT * FROM airports WHERE IATA_code = ?',(airport,))
+        information = cursor.fetchall()
+        print(f"{information[1]} ({information[0]})")
+        
+        
+        
 def airport_list():
     global proper_choice
     get_all_airports()
-    for i in range(len(airports)%10):
+    for i in range(20-(len(airports)%20)):
         airports.append("   ")
-    print(" ----------------------------------------------------------- ")
-    if len(airports)%10 == 0:
+    print("                                                   List of IATA Codes                                                    ")
+    print(" ----------------------------------------------------------------------------------------------------------------------- ")
+    if len(airports)%20 == 0:
         extra = 0
     else:
         extra = 1
-    for i in range((len(airports)//10)+extra):
-        j = i*10
-        print(f"| {airports[j]} | {airports[j+1]} | {airports[j+2]} | {airports[j+3]} | {airports[j+4]} | {airports[j+5]} | {airports[j+6]} | {airports[j+7]} | {airports[j+8]} | {airports[j+9]} |")
-        if i+1 != (len(airports)//10)+extra:
-            print("|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|")
-    print(" ----------------------------------------------------------- ")
-        
-
-
+    for i in range((len(airports)//20)+extra):
+        j = i*20
+        print(f"| {airports[j]} | {airports[j+1]} | {airports[j+2]} | {airports[j+3]} | {airports[j+4]} | {airports[j+5]} | {airports[j+6]} | {airports[j+7]} | {airports[j+8]} | {airports[j+9]} | {airports[j+10]} | {airports[j+11]} | {airports[j+12]} | {airports[j+13]} | {airports[j+14]} | {airports[j+15]} | {airports[j+16]} | {airports[j+17]} | {airports[j+18]} | {airports[j+19]} |")
+        if i+1 != (len(airports)//20)+extra:
+            print("|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|")
+    print(" ----------------------------------------------------------------------------------------------------------------------- ")
+    user_choice = input("\nWhich of these airports would you like to find information about?\nEnter the IATA code here: ")
+    airport_info(user_choice)
 
 with sqlite3.connect('europe_airports.db') as conn:
     cursor = conn.cursor()
