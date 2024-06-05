@@ -12,21 +12,39 @@ proper_choice = False
 def clear():
     os.system('clear')
 
-def airport_info(airport):
-    global proper_choice
+def get_all_airports():
     cursor.execute('SELECT airports.IATA_code FROM airports')
     results = cursor.fetchall()
     for item in results:
         airports.append(item[0])
+
+def airport_info(airport):
+    global proper_choice
+    get_all_airports()
     if airport not in airports:
         print("This airport is not on the list.")
         proper_choice = False
     else:
         print(f"What would you like to find out about {airport}?\n1. Official name\n2. City served\n3. Country served\n4. Number of unique destinations\n5. Number of terminals\n6. Yearly passengers\nYou may also enter multiple digits to find out multiple pieces of information\n> ")
 
-
 def airport_list():
-    clear()
+    global proper_choice
+    get_all_airports()
+    for i in range(len(airports)%10):
+        airports.append("   ")
+    print(" ----------------------------------------------------------- ")
+    if len(airports)%10 == 0:
+        extra = 0
+    else:
+        extra = 1
+    for i in range((len(airports)//10)+extra):
+        j = i*10
+        print(f"| {airports[j]} | {airports[j+1]} | {airports[j+2]} | {airports[j+3]} | {airports[j+4]} | {airports[j+5]} | {airports[j+6]} | {airports[j+7]} | {airports[j+8]} | {airports[j+9]} |")
+        if i+1 != (len(airports)//10)+extra:
+            print("|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|")
+    print(" ----------------------------------------------------------- ")
+        
+
 
 
 with sqlite3.connect('europe_airports.db') as conn:
@@ -35,10 +53,10 @@ with sqlite3.connect('europe_airports.db') as conn:
     proper_choice = False
     if user_choice == '1':
         while proper_choice == False:
-            user_choice = input("Enter the IATA code of the airport you'd like to find information about. If you'd like a list of airports, enter OPT (currently not working).\n> ")
+            user_choice = input("Enter the IATA code of the airport you'd like to find information about. If you'd like a list of airports, enter OPT.\n> ")
             if user_choice == 'OPT':
                 proper_choice = True
-                airport_list('all')
+                airport_list()
             elif len(user_choice) != 3:
                 print('Invalid entry, IATA codes are 3 letters long.')
             else:
