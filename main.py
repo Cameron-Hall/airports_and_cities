@@ -4,7 +4,6 @@ import os
 
 # LISTS
 airports = []
-alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
 # VARIABLES
 proper_choice = False
@@ -36,7 +35,6 @@ def airport_info(airport):
         print(f"\033[1m{information[0][1]} ({information[0][0]})\033[m")
         print(f"{information[0][0]} is located in {information[0][2]}, {information[0][3]}. It has {information[0][5]} terminal{plural}.")
         print(f"It flies to {information[0][4]} unique destinations and has {information[0][6]} yearly passengers.")
-
         
 def airport_list():
     global proper_choice
@@ -56,12 +54,16 @@ def airport_list():
             print("|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|")
     print(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ")
 
+def get_all_cities():
+    cursor.execute('SELECT cities.city_name FROM cities')
+    results  
 
+# CODE
 with sqlite3.connect('europe_airports.db') as conn:
     cursor = conn.cursor()
     get_all_airports()
     while program_running == True:
-        user_choice = input("What would you like to find information about?\n1. Airports\n2. Cities (not working)\n3. Exit the program\n> ")
+        user_choice = input("What would you like to find information about?\n1. Airports (done!)\n2. Cities (working on)\n3. Exit the program\n> ")
         proper_choice = False
         if user_choice == '1':
             while proper_choice == False:
@@ -92,13 +94,13 @@ with sqlite3.connect('europe_airports.db') as conn:
                         back_end += 3
                     input("")
                     clear()
-
         elif user_choice == '2':
             user_choice = input("Enter the name of the city you'd like to find information about. If you'd like a list of cities, enter options.")
+            proper_choice = False
+
         elif user_choice == '3':
             program_running = False
         else:
             print("This is not an eligible option.")
-
 
         conn.commit()
