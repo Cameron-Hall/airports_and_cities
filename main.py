@@ -4,24 +4,29 @@ import os
 
 # LISTS
 airports = []
+cities = []
 
 # VARIABLES
 proper_choice = False
 program_running = True
+from_options = False
 
 # FUNCTIONS
 def clear():
     os.system('cls')
+
+clear()
 
 def get_all_airports():
     cursor.execute('SELECT airports.IATA_code FROM airports')
     results = cursor.fetchall()
     for item in results:
         airports.append(item[0])
+    for i in range(30-(len(airports)%30)):
+        airports.append("   ")
 
 def airport_info(airport):
     global proper_choice
-    get_all_airports()
     if airport not in airports:
         print(f"{airport} is not a valid airport.")
         proper_choice = False
@@ -37,11 +42,7 @@ def airport_info(airport):
         print(f"It flies to {information[0][4]} unique destinations and has {information[0][6]} yearly passengers.")
         
 def airport_list():
-    global proper_choice
-    get_all_airports()
-    for i in range(30-(len(airports)%30)):
-        airports.append("   ")
-    print("\n \033[1mList of IATA Codes\033[m                                                                                                                                                              ")
+    print("\n \033[1mList of IATA Codes\033[m")
     print(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ")
     if len(airports)%30 == 0:
         extra = 0
@@ -56,18 +57,57 @@ def airport_list():
 
 def get_all_cities():
     cursor.execute('SELECT cities.city_name FROM cities')
-    results  
+    results = cursor.fetchall()
+    for item in results:
+        cities.append(item[0])
+    for i in range(10-(len(cities)%10)):
+        cities.append(" ")
+
+def city_info(city):
+    global proper_choice
+    cursor.execute('SELECT * FROM cities WHERE city_name = ?',(city,))
+    information = cursor.fetchall()
+    if information[0][2] > 1:
+        plural = 's'
+        are_or_is = 'are'
+    else:
+        plural = ''
+        are_or_is = 'is'
+    print(f"\033[1m{information[0][1]}\033[m")
+    print(f"There {are_or_is} {information[0][2]} airport{plural} in {information[0][1]}. {information[0][1]} is home to approximately {information[0][3]} people.")
+    input('')
+    
+def city_list():
+    print("\n \033[1mList of Cities \033[m")
+    print(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ")
+    if len(cities)%10 == 0:
+        extra = 0
+    else:
+        extra = 1
+    for i in range((len(cities)//10)+extra):
+        j = i*10
+        print(f"| {cities[j]:<15} | {cities[j+1]:<15} | {cities[j+2]:<15} | {cities[j+3]:<15} | {cities[j+4]:<15} | {cities[j+5]:<15} | {cities[j+6]:<15} | {cities[j+7]:<15} | {cities[j+8]:<15} | {cities[j+9]:<15} |")
+        if i+1 != (len(cities)//10)+extra:
+            print("|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|")
+    print(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ")
 
 # CODE
 with sqlite3.connect('europe_airports.db') as conn:
     cursor = conn.cursor()
     get_all_airports()
-    while program_running == True:
+    get_all_cities()
+    while program_running:
         user_choice = input("What would you like to find information about?\n1. Airports (done!)\n2. Cities (working on)\n3. Exit the program\n> ")
+        clear()
         proper_choice = False
         if user_choice == '1':
-            while proper_choice == False:
-                user_choice = input("Enter the IATA code(s) of the airport you'd like to find information about. If you'd like a list of airports, enter OPT. \nIf you'd like to look at information for multiple airports, simply separate the IATA codes with a space.\n> ")
+            while not proper_choice:
+                if from_options == True:
+                    options = ''
+                    from_options = False
+                else:
+                    options = "If you'd like a list of cities, enter OPT."
+                user_choice = input(f"Enter the IATA code(s) of the airport you'd like to find information about. {options} \nIf you'd like to look at information for multiple airports, simply separate the IATA codes with a space.\n> ")
                 user_choice = user_choice.upper()
                 alphabetic_string = ''
                 for char in range(len(user_choice)):
@@ -78,6 +118,7 @@ with sqlite3.connect('europe_airports.db') as conn:
                     proper_choice = False
                     airport_list()
                     user_choice = '1'
+                    from_options = True
                 elif len(user_choice) % 3 != 0:
                     print("Invalid length of entry. Make sure all IATA codes entered are 3 letters long")
                 else:
@@ -94,9 +135,28 @@ with sqlite3.connect('europe_airports.db') as conn:
                         back_end += 3
                     input("")
                     clear()
+
         elif user_choice == '2':
-            user_choice = input("Enter the name of the city you'd like to find information about. If you'd like a list of cities, enter options.")
-            proper_choice = False
+            while not proper_choice:
+                if from_options == True:
+                    options = ''
+                    from_options = False
+                else:
+                    options = "If you'd like a list of cities, enter options."
+                user_choice = input(f"Enter the name of the city you'd like to find information about. {options}\n> ")
+                proper_choice = False
+                if user_choice.title() in cities:
+                    clear()
+                    city_info(user_choice.title())
+                    proper_choice = True
+                    user_choice = input(f"1. View all airports in {user_choice}.\n2. Back to home page\n> ")
+                elif user_choice.lower() == 'options':
+                    clear()
+                    proper_choice = False
+                    city_list()
+                    user_choice = '2'
+                    from_options = True
+
 
         elif user_choice == '3':
             program_running = False
