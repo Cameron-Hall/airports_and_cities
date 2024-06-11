@@ -91,6 +91,35 @@ def city_list():
             print("|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|")
     print(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ")
 
+def airport_caller(user_choice):
+    user_choice = user_choice.upper()
+    alphabetic_string = ''
+    for char in range(len(user_choice)):
+        if user_choice[char].isalpha():
+            alphabetic_string += user_choice[char]
+    user_choice = alphabetic_string
+    if user_choice == 'OPT':
+        proper_choice = False
+        airport_list()
+        user_choice = '1'
+        from_options = True
+    elif len(user_choice) % 3 != 0:
+        print("Invalid length of entry. Make sure all IATA codes entered are 3 letters long")
+    else:
+        proper_choice = True
+        front_end = 0
+        back_end = 3
+        clear()
+        num_of_airports = len(user_choice)//3
+        for airport in range(num_of_airports):
+            entry = user_choice[front_end:back_end]
+            airport_info(entry)
+            print(" ")
+            front_end += 3
+            back_end += 3
+        input("")
+        clear()
+
 # CODE
 with sqlite3.connect('europe_airports.db') as conn:
     cursor = conn.cursor()
@@ -108,34 +137,7 @@ with sqlite3.connect('europe_airports.db') as conn:
                 else:
                     options = "If you'd like a list of cities, enter OPT."
                 user_choice = input(f"Enter the IATA code(s) of the airport you'd like to find information about. {options} \nIf you'd like to look at information for multiple airports, simply separate the IATA codes with a space.\n> ")
-                user_choice = user_choice.upper()
-                alphabetic_string = ''
-                for char in range(len(user_choice)):
-                    if user_choice[char].isalpha():
-                        alphabetic_string += user_choice[char]
-                user_choice = alphabetic_string
-                if user_choice == 'OPT':
-                    proper_choice = False
-                    airport_list()
-                    user_choice = '1'
-                    from_options = True
-                elif len(user_choice) % 3 != 0:
-                    print("Invalid length of entry. Make sure all IATA codes entered are 3 letters long")
-                else:
-                    proper_choice = True
-                    front_end = 0
-                    back_end = 3
-                    clear()
-                    num_of_airports = len(user_choice)//3
-                    for airport in range(num_of_airports):
-                        entry = user_choice[front_end:back_end]
-                        airport_info(entry)
-                        print(" ")
-                        front_end += 3
-                        back_end += 3
-                    input("")
-                    clear()
-
+                airport_caller()
         elif user_choice == '2':
             while not proper_choice:
                 if from_options == True:
@@ -149,7 +151,16 @@ with sqlite3.connect('europe_airports.db') as conn:
                     clear()
                     city_info(user_choice.title())
                     proper_choice = True
-                    user_choice = input(f"1. View all airports in {user_choice}.\n2. Back to home page\n> ")
+                    city = user_choice.title()
+                    user_choice = input(f"1. View all airports in {city}.\n2. Back to home page\n> ")
+                    if user_choice == '1':
+                        cursor.execute("SELECT airports.IATA_code FROM airports WHERE city_served = ?",(city, ))
+                        information = cursor.fetchall()
+                        airports_in_city = ''
+                        for i in information:
+                            airports_in_city += i[0] 
+                        airport_caller(airports_in_city)
+                        
                 elif user_choice.lower() == 'options':
                     clear()
                     proper_choice = False
@@ -157,10 +168,10 @@ with sqlite3.connect('europe_airports.db') as conn:
                     user_choice = '2'
                     from_options = True
 
-
         elif user_choice == '3':
             program_running = False
         else:
             print("This is not an eligible option.")
 
         conn.commit()
+
