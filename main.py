@@ -4,12 +4,14 @@ import os
 
 # LISTS
 airports = []
+airports_filtered = []
 cities = []
 
 # VARIABLES
 proper_choice = False
 program_running = True
 from_options = False
+from_city = False
 
 # FUNCTIONS
 def clear():
@@ -26,6 +28,7 @@ def get_all_airports():
         airports.append("   ")
 
 def airport_info(airport):
+    global information
     global proper_choice
     if airport not in airports:
         print(f"{airport} is not a valid airport.")
@@ -92,6 +95,8 @@ def city_list():
     print(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ")
 
 def airport_caller(user_choice):
+    global information
+    global proper_choice
     user_choice = user_choice.upper()
     alphabetic_string = ''
     for char in range(len(user_choice)):
@@ -99,25 +104,54 @@ def airport_caller(user_choice):
             alphabetic_string += user_choice[char]
     user_choice = alphabetic_string
     if user_choice == 'OPT':
-        proper_choice = False
-        airport_list()
-        user_choice = '1'
-        from_options = True
-    elif len(user_choice) % 3 != 0:
+        while not proper_choice:
+            proper_choice = False
+            airport_list()
+            user_choice = input("1. Choose airport from list\n2. Back to homepage\n> ")
+            clear()
+            if user_choice == '1':
+                user_choice = input("Enter the IATA code of the airport you'd like to find information about.\n> ")
+                airport_caller(user_choice)
+                proper_choice = True
+            elif user_choice == '2':
+                proper_choice = True
+            else:
+                airport_caller(user_choice)
+    elif len(user_choice) % 3 != 0 or len(user_choice) == 0:
+        clear()
         print("Invalid length of entry. Make sure all IATA codes entered are 3 letters long")
     else:
-        proper_choice = True
-        front_end = 0
-        back_end = 3
+        if len(user_choice) == 3:
+            plural = ''
+        else:
+            plural = 's'
         clear()
-        num_of_airports = len(user_choice)//3
-        for airport in range(num_of_airports):
-            entry = user_choice[front_end:back_end]
-            airport_info(entry)
-            print(" ")
-            front_end += 3
-            back_end += 3
-        input("")
+        if not from_city:
+            print(f"To confirm, you want to view information about the following airport{plural}:")
+            front_end = 0
+            back_end = 3
+            for i in range(len(user_choice)//3):
+                print(f"{user_choice[front_end:back_end]}")
+                front_end += 3
+                back_end += 3
+            confirmation = input("Type Y to proceed, or nothing to reselect your airports: ")
+        else:
+            confirmation = 'Y'
+        if confirmation.upper() == 'Y':
+            proper_choice = True
+            front_end = 0
+            back_end = 3
+            clear()
+            num_of_airports = len(user_choice)//3
+            for airport in range(num_of_airports):
+                entry = user_choice[front_end:back_end]
+                airport_info(entry)
+                print(" ")
+                front_end += 3
+                back_end += 3
+            input("")
+        else:
+            pass
         clear()
 
 # CODE
@@ -126,18 +160,13 @@ with sqlite3.connect('europe_airports.db') as conn:
     get_all_airports()
     get_all_cities()
     while program_running:
-        user_choice = input("What would you like to find information about?\n1. Airports (done!)\n2. Cities (working on)\n3. Exit the program\n> ")
+        user_choice = input("What would you like to find information about?\n1. Airports\n2. Cities\n3. Exit the program\n> ")
         clear()
         proper_choice = False
         if user_choice == '1':
             while not proper_choice:
-                if from_options == True:
-                    options = ''
-                    from_options = False
-                else:
-                    options = "If you'd like a list of cities, enter OPT."
-                user_choice = input(f"Enter the IATA code(s) of the airport you'd like to find information about. {options} \nIf you'd like to look at information for multiple airports, simply separate the IATA codes with a space.\n> ")
-                airport_caller()
+                user_choice = input(f"Enter the IATA code(s) of the airport you'd like to find information about. They are three letters and all alphabetic.\nIf you'd like a list of cities, enter OPT. \nIf you'd like to look at information for multiple airports, simply separate the IATA codes with a space.\n> ")
+                airport_caller(user_choice)
         elif user_choice == '2':
             while not proper_choice:
                 if from_options == True:
@@ -150,28 +179,37 @@ with sqlite3.connect('europe_airports.db') as conn:
                 if user_choice.title() in cities:
                     clear()
                     city_info(user_choice.title())
-                    proper_choice = True
                     city = user_choice.title()
-                    user_choice = input(f"1. View all airports in {city}.\n2. Back to home page\n> ")
-                    if user_choice == '1':
-                        cursor.execute("SELECT airports.IATA_code FROM airports WHERE city_served = ?",(city, ))
-                        information = cursor.fetchall()
-                        airports_in_city = ''
-                        for i in information:
-                            airports_in_city += i[0] 
-                        airport_caller(airports_in_city)
-                        
+                    while not proper_choice:
+                        user_choice = input(f"1. View all airports in {city}.\n2. Back to home page\n> ")
+                        if user_choice == '1':
+                            cursor.execute("SELECT airports.IATA_code FROM airports WHERE city_served = ?",(city, ))
+                            information = cursor.fetchall()
+                            airports_in_city = ''
+                            for i in information:
+                                airports_in_city += i[0] 
+                            from_city = True
+                            airport_caller(airports_in_city)     
+                            proper_choice = True   
+                            from_city = False
+                        elif user_choice == '2':
+                            clear()
+                            proper_choice = True
+                        else:
+                            clear()
+                            print("This is not a valid option")
                 elif user_choice.lower() == 'options':
                     clear()
                     proper_choice = False
                     city_list()
                     user_choice = '2'
                     from_options = True
-
+                else:
+                    clear()
+                    print(f"{user_choice} is not a valid city")
         elif user_choice == '3':
             program_running = False
         else:
             print("This is not an eligible option.")
 
         conn.commit()
-
