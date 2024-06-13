@@ -21,12 +21,12 @@ def clear():
 
 clear()
 
-def get_all_airports():
+def get_all_airports(): 
     cursor.execute('SELECT airports.IATA_code FROM airports')
     results = cursor.fetchall()
     for item in results:
         airports.append(item[0])
-    for i in range(30-(len(airports)%30)):
+    for i in range(30-(len(airports)%30)): # for printing the table, means we have a multilpe of 30 items in the list
         airports.append("   ")
 
 def airport_info(airport):
@@ -39,10 +39,10 @@ def airport_info(airport):
         cursor.execute('SELECT * FROM airports WHERE IATA_code = ?',(airport,))
         information = cursor.fetchall()
         if information[0][5] > 1:
-            plural = 's'
+            plural = 's'  # plural to make it easier to read
         else:
             plural = ''
-        print(f"\033[1m{information[0][1]} ({information[0][0]})\033[m")
+        print(f"\033[1m{information[0][1]} ({information[0][0]})\033[m") ## \033[1m makes it bold and \033[m unbolds
         print(f"{information[0][0]} is located in {information[0][2]}, {information[0][3]}. It has {information[0][5]} terminal{plural}.")
         print(f"It flies to {information[0][4]} unique destinations and has {information[0][6]} yearly passengers.")
         
@@ -63,7 +63,7 @@ def airport_list():
 def get_all_cities():
     cursor.execute('SELECT cities.city_name FROM cities')
     results = cursor.fetchall()
-    for item in results:
+    for item in results:                     # same as above
         cities.append(item[0])
     for i in range(10-(len(cities)%10)):
         cities.append(" ")
@@ -73,7 +73,7 @@ def city_info(city):
     cursor.execute('SELECT * FROM cities WHERE city_name = ?',(city,))
     information = cursor.fetchall()
     if information[0][2] > 1:
-        plural = 's'
+        plural = 's'         #same as cities for above
         are_or_is = 'are'
     else:
         plural = ''
@@ -89,7 +89,7 @@ def city_list():
         extra = 0
     else:
         extra = 1
-    for i in range((len(cities)//10)+extra):
+    for i in range((len(cities)//10)+extra):           #similar to airport form, but :<15 formats with the largest city in the table (luxembourg city)
         j = i*10
         print(f"| {cities[j]:<15} | {cities[j+1]:<15} | {cities[j+2]:<15} | {cities[j+3]:<15} | {cities[j+4]:<15} | {cities[j+5]:<15} | {cities[j+6]:<15} | {cities[j+7]:<15} | {cities[j+8]:<15} | {cities[j+9]:<15} |")
         if i+1 != (len(cities)//10)+extra:
@@ -102,14 +102,14 @@ def airport_caller(user_choice):
     user_choice = user_choice.upper()
     alphabetic_string = ''
     for char in range(len(user_choice)):
-        if user_choice[char].isalpha():
+        if user_choice[char].isalpha():      #converts string to all alpha and all uppercase like an IATA code should be
             alphabetic_string += user_choice[char]
     user_choice = alphabetic_string
     if user_choice == 'OPT':
         while not proper_choice:
             proper_choice = False
             airport_list()
-            user_choice = input("1. Choose airport from list\n2. Back to homepage\n> ")
+            user_choice = input("1. Choose airport from list\n2. Back to homepage\n> ") 
             clear()
             if user_choice == '1':
                 user_choice = input("Enter the IATA code of the airport you'd like to find information about.\n> ")
@@ -118,7 +118,7 @@ def airport_caller(user_choice):
             elif user_choice == '2':
                 proper_choice = True
             else:
-                airport_caller(user_choice)
+                airport_caller(user_choice)       #for if the user doesnt read and tries to enter IATA codes immediately
     elif len(user_choice) % 3 != 0 or len(user_choice) == 0:
         clear()
         print("Invalid length of entry. Make sure all IATA codes entered are 3 letters long")
@@ -131,12 +131,12 @@ def airport_caller(user_choice):
         if not from_city:
             print(f"To confirm, you want to view information about the following airport{plural}:")
             front_end = 0
-            back_end = 3
+            back_end = 3          #checking system bc if a user enters a lot of airports and its like one character off then it may mess them up
             for i in range(len(user_choice)//3):
                 print(f"{user_choice[front_end:back_end]}")
                 front_end += 3
                 back_end += 3
-            confirmation = input("Type Y to proceed, or nothing to reselect your airports: ")
+            confirmation = input("Type Y to proceed, or nothing to reselect your airports: ") #nothing = anyhting not y
         else:
             confirmation = 'Y'
         if confirmation.upper() == 'Y':
@@ -147,7 +147,7 @@ def airport_caller(user_choice):
             num_of_airports = len(user_choice)//3
             for airport in range(num_of_airports):
                 entry = user_choice[front_end:back_end]
-                airport_info(entry)
+                airport_info(entry)      # gets information about airports in the list provide by user one at a time and prints it
                 print(" ")
                 front_end += 3
                 back_end += 3
@@ -160,7 +160,7 @@ def airport_caller(user_choice):
 # CODE
 with sqlite3.connect('airports_and_cities.db') as conn:
     cursor = conn.cursor()
-    get_all_airports()
+    get_all_airports() #connect to database and get main info in lists
     get_all_cities()
     while program_running:
         print("\033[1mEUROPEAN AND AMERICAN AIRPORTS AND CITIES\033[m")
@@ -170,7 +170,7 @@ with sqlite3.connect('airports_and_cities.db') as conn:
         if user_choice == '1':
             while not proper_choice:
                 user_choice = input(f"Enter the IATA code(s) of the airport you'd like to find information about. They are three letters and all alphabetic.\nIf you'd like a list of cities, enter OPT. \nIf you'd like to look at information for multiple airports, simply separate the IATA codes with a space.\n> ")
-                airport_caller(user_choice)
+                airport_caller(user_choice) #calls airport caller function. is in functoin bc used by cities
         elif user_choice == '2':
             while not proper_choice:
                 if from_options == True:
@@ -187,13 +187,13 @@ with sqlite3.connect('airports_and_cities.db') as conn:
                     while not proper_choice:
                         user_choice = input(f"1. View all airports in {city}.\n2. Back to home page\n> ")
                         if user_choice == '1':
-                            cursor.execute("SELECT airports.IATA_code FROM airports WHERE city_served = ?",(city, ))
+                            cursor.execute("SELECT airports.IATA_code FROM airports WHERE city_served = ?",(city, ))     
                             information = cursor.fetchall()
                             airports_in_city = ''
                             for i in information:
                                 airports_in_city += i[0] 
                             from_city = True
-                            airport_caller(airports_in_city)     
+                            airport_caller(airports_in_city)     # not in function bc only used in one place at one time
                             proper_choice = True   
                             from_city = False
                         elif user_choice == '2':
@@ -216,4 +216,4 @@ with sqlite3.connect('airports_and_cities.db') as conn:
         else:
             print("This is not an eligible option.")
 
-        conn.commit()
+            #removed conn.commit as unnecessary
