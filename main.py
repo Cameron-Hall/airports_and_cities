@@ -1,6 +1,7 @@
 # IMPORTS
 import sqlite3
 import os
+import time
 
 # LISTS
 airports = []
@@ -16,6 +17,7 @@ from_city = False
 # FUNCTIONS
 def clear():
     os.system('cls')
+    time.sleep(0.1)
 
 clear()
 
@@ -31,7 +33,7 @@ def airport_info(airport):
     global information
     global proper_choice
     if airport not in airports:
-        print(f"{airport} is not a valid airport.")
+        print(f"'{airport}' is not a valid airport.")
         proper_choice = False
     else:
         cursor.execute('SELECT * FROM airports WHERE IATA_code = ?',(airport,))
@@ -149,17 +151,19 @@ def airport_caller(user_choice):
                 print(" ")
                 front_end += 3
                 back_end += 3
+                time.sleep(0.1)
             input("")
         else:
             pass
         clear()
 
 # CODE
-with sqlite3.connect('europe_airports.db') as conn:
+with sqlite3.connect('airports_and_cities.db') as conn:
     cursor = conn.cursor()
     get_all_airports()
     get_all_cities()
     while program_running:
+        print("\033[1mEUROPEAN AND AMERICAN AIRPORTS AND CITIES\033[m")
         user_choice = input("What would you like to find information about?\n1. Airports\n2. Cities\n3. Exit the program\n> ")
         clear()
         proper_choice = False
@@ -206,7 +210,7 @@ with sqlite3.connect('europe_airports.db') as conn:
                     from_options = True
                 else:
                     clear()
-                    print(f"{user_choice} is not a valid city")
+                    print(f"'{user_choice}' is not a valid city")
         elif user_choice == '3':
             program_running = False
         else:
